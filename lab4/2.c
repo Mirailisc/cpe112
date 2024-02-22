@@ -12,8 +12,6 @@ typedef struct Node
 
 Node *head = NULL;
 
-char buffer[100000] = "";
-
 void push(int value)
 {
     Node *newNode = malloc(sizeof(Node));
@@ -35,14 +33,11 @@ void pop()
 {
     if (head == NULL)
     {
-        char tmp[100];
         printf("empty\n");
-
         return;
     }
 
     Node *ptr = head;
-    char tmp[100];
     printf("%d\n", ptr->value);
 
     head = head->next;
@@ -79,7 +74,6 @@ int main()
             break;
 
         case 'e':
-            char tmp[100];
             printf("%d\n", isEmpty());
 
             break;
@@ -91,7 +85,6 @@ int main()
         case 't':
             if (!isEmpty())
             {
-                char tmp[100];
                 printf("%d\n", top());
             }
             else
