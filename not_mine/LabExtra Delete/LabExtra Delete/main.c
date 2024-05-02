@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Node {
+typedef struct Node
+{
   int data;
   struct Node *left;
   struct Node *right;
 } Node;
 
-Node *createNode(int data) {
+Node *createNode(int data)
+{
   Node *node = (Node *)malloc(sizeof(Node));
   node->data = data;
   node->left = NULL;
@@ -15,31 +17,44 @@ Node *createNode(int data) {
   return node;
 }
 
-void deleteNode(Node **root, int data) {
-  if (*root == NULL) {
+void deleteNode(Node **root, int data)
+{
+  if (*root == NULL)
+  {
     return;
   }
 
-  if (data < (*root)->data) {
+  if (data < (*root)->data)
+  {
     deleteNode(&(*root)->left, data);
-  } else if (data > (*root)->data) {
+  }
+  else if (data > (*root)->data)
+  {
     deleteNode(&(*root)->right, data);
-  } else {
+  }
+  else
+  {
     // Node found
-    if ((*root)->left == NULL) {
+    if ((*root)->left == NULL)
+    {
       // Leaf node
       Node *temp = *root;
       *root = (*root)->right;
       free(temp);
-    } else if ((*root)->right == NULL) {
+    }
+    else if ((*root)->right == NULL)
+    {
       // Node with one child
       Node *temp = *root;
       *root = (*root)->left;
       free(temp);
-    } else {
+    }
+    else
+    {
       // Node with two children
       Node *successor = (*root)->right;
-      while (successor->left != NULL) {
+      while (successor->left != NULL)
+      {
         successor = successor->left;
       }
 
@@ -49,9 +64,11 @@ void deleteNode(Node **root, int data) {
   }
 }
 
-//PreOrder
-void printTree(Node *root) {
-  if (root == NULL) {
+// PreOrder
+void printTree(Node *root)
+{
+  if (root == NULL)
+  {
     return;
   }
 
@@ -60,7 +77,8 @@ void printTree(Node *root) {
   printTree(root->right);
 }
 
-int main(void) {
+int main(void)
+{
   Node *root = NULL;
 
   // Insert nodes
