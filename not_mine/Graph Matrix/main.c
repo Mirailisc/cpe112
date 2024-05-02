@@ -5,8 +5,7 @@
 int N, M;
 
 // Function to create Adjacency Matrix
-void createAdjMatrix(int Adj[][N + 1],
-                     int arr[][2])
+void createAdjMatrix(int Adj[][N + 1], int arr[][2])
 {
 
     // Initialise all value to this
