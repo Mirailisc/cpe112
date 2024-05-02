@@ -1,203 +1,146 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_VERTICES 1000
-
-struct Node
+typedef struct
 {
-    int vertex;
-    struct Node *next;
-};
+    int ff;
+    int ss;
+} pair;
 
-struct Graph
-{
-    int numVertices;
-    struct Node **adjLists;
-    int *visited;
-};
+#define type pair
 
-struct Queue
+typedef struct
 {
-    int items[MAX_VERTICES];
-    int front;
-    int rear;
-};
+    type *array;
+    int size;
+    int capacity;
+} vector;
 
-struct Queue *createQueue()
+vector create()
 {
-    struct Queue *q = (struct Queue *)malloc(sizeof(struct Queue));
-    q->front = -1;
-    q->rear = -1;
-    return q;
+    vector new;
+    new.capacity = 8;
+    new.size = 0;
+    new.array = malloc(sizeof(type) * new.capacity);
+    return new;
 }
 
-void enqueue(struct Queue *q, int value)
+int compare(const type *a, const type *b)
 {
-    if (q->rear == MAX_VERTICES - 1)
-        printf("Queue is full\n");
-    else
+    return a->ss <= b->ss;
+}
+
+void push(vector *pq, type val)
+{
+    if (pq->size == pq->capacity)
     {
-        if (q->front == -1)
-            q->front = 0;
-        q->rear++;
-        q->items[q->rear] = value;
+        pq->capacity = pq->capacity << 1;
+        pq->array = realloc(pq->array, sizeof(type) * pq->capacity);
+    }
+
+    pq->array[pq->size++] = val;
+    size_t index = pq->size - 1;
+
+    while (index > 0 && compare(&(pq->array[index]), &(pq->array[(index - 1) / 2])))
+    {
+        type temp = pq->array[index];
+        pq->array[index] = pq->array[(index - 1) / 2];
+        pq->array[(index - 1) / 2] = temp;
+        index = (index - 1) / 2;
     }
 }
 
-int dequeue(struct Queue *q)
+int empty(vector *pq)
 {
-    int item;
-    if (q->front == -1)
-        printf("Queue is empty\n");
-    else
+    return pq->size == 0;
+}
+
+void pop(vector *pq)
+{
+    pq->size--;
+    pq->array[0] = pq->array[pq->size];
+    type tmp = pq->array[0];
+    size_t idx = 0;
+    size_t c;
+
+    while ((c = 2 * idx + 1) < pq->size)
     {
-        item = q->items[q->front];
-        q->front++;
-        if (q->front > q->rear)
-            q->front = q->rear = -1;
-        return item;
-    }
-    return -1;
-}
-
-int isEmpty(struct Queue *q)
-{
-    if (q->rear == -1)
-        return 1;
-    return 0;
-}
-
-struct Node *createNode(int v)
-{
-    struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
-    newNode->vertex = v;
-    newNode->next = NULL;
-    return newNode;
-}
-
-struct Graph *createGraph(int n)
-{
-    struct Graph *graph = (struct Graph *)malloc(sizeof(struct Graph));
-    graph->numVertices = n;
-
-    graph->adjLists = (struct Node **)malloc(n * sizeof(struct Node *));
-    graph->visited = (int *)malloc(n * sizeof(int));
-
-    for (int i = 0; i < n; i++)
-    {
-        graph->adjLists[i] = NULL;
-        graph->visited[i] = 0;
-    }
-    return graph;
-}
-
-void addEdge(struct Graph *graph, int src, int dest)
-{
-    struct Node *newNode = createNode(dest);
-    newNode->next = graph->adjLists[src];
-    graph->adjLists[src] = newNode;
-
-    newNode = createNode(src);
-    newNode->next = graph->adjLists[dest];
-    graph->adjLists[dest] = newNode;
-}
-
-int compareIntegers(const void *a, const void *b)
-{
-    return (*(int *)a - *(int *)b);
-}
-
-void BFS(struct Graph *graph, int start)
-{
-    struct Queue *queue = createQueue();
-
-    graph->visited[start] = 1;
-    enqueue(queue, start);
-
-    while (!isEmpty(queue))
-    {
-        int currentVertex = dequeue(queue);
-        printf("%d ", currentVertex);
-
-        struct Node *temp = graph->adjLists[currentVertex];
-        int adjVertices[MAX_VERTICES];
-        int numAdjVertices = 0;
-        while (temp)
+        if (c + 1 < pq->size && !compare(&(pq->array[c]), &(pq->array[c + 1])))
         {
-            adjVertices[numAdjVertices++] = temp->vertex;
-            temp = temp->next;
+            c++;
         }
-        qsort(adjVertices, numAdjVertices, sizeof(int), compareIntegers);
-
-        for (int i = 0; i < numAdjVertices; i++)
+        if (!compare(&(pq->array[c]), &tmp))
         {
-            int adjVertex = adjVertices[i];
-            if (graph->visited[adjVertex] == 0)
-            {
-                graph->visited[adjVertex] = 1;
-                enqueue(queue, adjVertex);
-            }
+            break;
         }
+        pq->array[idx] = pq->array[c];
+        idx = c;
     }
+
+    pq->array[idx] = tmp;
 }
 
-void DFSUtil(struct Graph *graph, int v)
+type top(vector *pq)
 {
-    graph->visited[v] = 1;
-
-    struct Node *temp = graph->adjLists[v];
-    while (temp)
-    {
-        int adjVertex = temp->vertex;
-        if (graph->visited[adjVertex] == 0)
-        {
-            DFSUtil(graph, adjVertex);
-        }
-        temp = temp->next;
-    }
-}
-
-void DFS(struct Graph *graph, int start)
-{
-    DFSUtil(graph, start);
-
-    for (int i = 0; i < graph->numVertices; i++)
-    {
-        if (graph->visited[i])
-        {
-            printf("%d ", i);
-        }
-    }
+    return pq->array[0];
 }
 
 int main()
 {
-    int u, e;
-    scanf("%d", &u);
-    scanf("%d", &e);
+    int n, s;
 
-    struct Graph *graph = createGraph(u + 1);
+    scanf("%d%d", &n, &s);
 
-    for (int i = 0; i < e; i++)
+    int adj[n][n];
+
+    vector pq = create();
+
+    for (int i = 0; i < n; i++)
     {
-        int source, dest;
-        scanf("%d %d", &source, &dest);
-        addEdge(graph, source, dest);
+        for (int j = 0; j < n; j++)
+        {
+            scanf("%d", &adj[i][j]);
+        }
     }
 
-    int startVertex;
-    scanf("%d", &startVertex);
+    int dist[n];
 
-    BFS(graph, startVertex);
-    printf("\n");
-
-    for (int i = 0; i <= u; i++)
+    for (int i = 0; i < n; i++)
     {
-        graph->visited[i] = 0;
+        dist[i] = 999999;
     }
 
-    DFS(graph, startVertex);
-    printf("\n");
+    pair start;
+    start.ff = s;
+    start.ss = 0;
+    dist[s] = 0;
 
-    return 0;
+    push(&pq, start);
+
+    while (!empty(&pq))
+    {
+        pair pqtop = top(&pq);
+
+        pop(&pq);
+        int u = pqtop.ff;
+
+        for (int v = 0; v < n; v++)
+        {
+            if (adj[u][v] == 0)
+            {
+                continue;
+            }
+            if (dist[v] > dist[u] + adj[u][v])
+            {
+                dist[v] = dist[u] + adj[u][v];
+                pair pi = {.ff = v, .ss = dist[v]};
+                push(&pq, pi);
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        printf("%d %d\n", i, dist[i]);
+    }
 }

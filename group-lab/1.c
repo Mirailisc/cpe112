@@ -1,81 +1,112 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Edge
+typedef struct
 {
-    int source;
-    int destination;
-    int weight;
-    struct Edge *next;
-} Edge;
+    int *array;
+    int size;
+    int capacity;
+} vector;
 
-Edge *createEdge(int source, int destination, int weight)
+vector create()
 {
-    Edge *newEdge = (Edge *)malloc(sizeof(Edge));
+    vector new;
+    new.capacity = 8;
+    new.size = 0;
+    new.array = malloc(sizeof(int) * new.capacity);
 
-    if (newEdge == NULL)
+    return new;
+}
+
+int compare(const int *a, const int *b)
+{
+    return *a < *b;
+}
+
+void push(vector *pq, int val)
+{
+    if (pq->size == pq->capacity)
     {
-        printf("Memory allocation failed\n");
-        exit(1);
+        pq->capacity = pq->capacity << 1;
+        pq->array = realloc(pq->array, sizeof(int) * pq->capacity);
     }
 
-    newEdge->source = source;
-    newEdge->destination = destination;
-    newEdge->weight = weight;
-    newEdge->next = NULL;
-    return newEdge;
-}
+    pq->array[pq->size++] = val;
+    size_t index = pq->size - 1;
 
-void addEdge(Edge *graph[], int source, int destination, int weight)
-{
-    Edge *newEdge = createEdge(source, destination, weight);
-    newEdge->next = graph[source];
-    graph[source] = newEdge;
-}
-
-void printGraph(Edge *graph[], int totalNodes)
-{
-    for (int i = 0; i < totalNodes; i++)
+    while (index > 0 && compare(&(pq->array[index]), &(pq->array[(index - 1) / 2])))
     {
-        Edge *current = graph[i];
-        while (current != NULL)
+        int temp = pq->array[index];
+        pq->array[index] = pq->array[(index - 1) / 2];
+        pq->array[(index - 1) / 2] = temp;
+        index = (index - 1) / 2;
+    }
+}
+int empty(vector *pq)
+{
+    return pq->size == 0;
+}
+
+void pop(vector *pq)
+{
+    pq->size--;
+    pq->array[0] = pq->array[pq->size];
+    int tmp = pq->array[0];
+    size_t idx = 0;
+    size_t c;
+    while ((c = 2 * idx + 1) < pq->size)
+    {
+        if (c + 1 < pq->size && !compare(&(pq->array[c]), &(pq->array[c + 1])))
         {
-            printf("%d —> %d (%d)\n", current->source, current->destination, current->weight);
-            current = current->next;
+            c++;
         }
+        if (!compare(&(pq->array[c]), &tmp))
+        {
+            break;
+        }
+        pq->array[idx] = pq->array[c];
+        idx = c;
     }
+    pq->array[idx] = tmp;
+}
+
+int top(vector *pq)
+{
+    return pq->array[0];
 }
 
 int main()
 {
-    int totalLines;
-    scanf("%d", &totalLines);
+    vector adj[100][100];
 
-    Edge *graph[totalLines];
-    for (int i = 0; i < totalLines; i++)
+    for (int i = 0; i < 100; i++)
     {
-        graph[i] = NULL;
-    }
-
-    for (int i = 0; i < totalLines; i++)
-    {
-        int source, destination, weight;
-        scanf("%d %d %d", &source, &destination, &weight);
-        addEdge(graph, source, destination, weight);
-    }
-
-    printGraph(graph, totalLines);
-
-    for (int i = 0; i < totalLines; i++)
-    {
-        Edge *current = graph[i];
-        while (current != NULL)
+        for (int j = 0; j < 100; j++)
         {
-            Edge *temp = current;
-            current = current->next;
-            free(temp);
+            adj[i][j] = create();
         }
     }
 
-    return 0;
+    int n;
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++)
+    {
+        int u, v, w;
+
+        scanf("%d%d%d", &u, &v, &w);
+        push(&adj[u][v], w);
+    }
+
+    for (int i = 0; i < 100; i++)
+    {
+        for (int j = 0; j < 100; j++)
+        {
+            while (!empty(&adj[i][j]))
+            {
+                printf("%d -> %d (%d)\n", i, j, top(&adj[i][j]));
+                pop(&adj[i][j]);
+            }
+        }
+    }
 }

@@ -1,64 +1,85 @@
-// Phubordin Poolnai 66070501040
 #include <stdio.h>
-#include <stdbool.h>
-#include <limits.h>
 
-#define MAX_NODES 100
+int mat[1000][1000];
+int visited[1000];
 
-int minDistance(int dist[], bool sptSet[], int V)
+void dfs(int now)
 {
-    int min = INT_MAX, min_index;
-
-    for (int v = 0; v < V; v++)
-        if (sptSet[v] == false && dist[v] <= min)
-            min = dist[v], min_index = v;
-
-    return min_index;
-}
-
-void printSolution(int dist[], int V)
-{
-    for (int i = 0; i < V; i++)
-        printf("%d %d\n", i, dist[i]);
-}
-
-void dijkstra(int graph[MAX_NODES][MAX_NODES], int src, int V)
-{
-    int dist[V];
-    bool sptSet[V];
-
-    for (int i = 0; i < V; i++)
+    if (visited[now])
     {
-        dist[i] = INT_MAX;
-        sptSet[i] = false;
+        return;
     }
 
-    dist[src] = 0;
+    printf("%d ", now);
 
-    for (int count = 0; count < V - 1; count++)
+    visited[now] = 1;
+
+    for (int v = 0; v < 1000; v++)
     {
-        int u = minDistance(dist, sptSet, V);
-        sptSet[u] = true;
-
-        for (int v = 0; v < V; v++)
-            if (!sptSet[v] && graph[u][v] && dist[u] != INT_MAX && dist[u] + graph[u][v] < dist[v])
-                dist[v] = dist[u] + graph[u][v];
+        if (mat[now][v])
+        {
+            dfs(v);
+        }
     }
-
-    printSolution(dist, V);
 }
+
+int queue[1000];
+int rear, front;
 
 int main()
 {
-    int V, src;
-    scanf("%d %d", &V, &src);
-    int graph[MAX_NODES][MAX_NODES];
+    int n, m;
+    rear = 0;
+    front = 0;
 
-    for (int i = 0; i < V; i++)
-        for (int j = 0; j < V; j++)
-            scanf("%d", &graph[i][j]);
+    scanf("%d%d", &n, &m);
+    for (int i = 0; i < 1000; i++)
+    {
+        visited[i] = 0;
+        for (int j = 0; j < 1000; j++)
+        {
+            mat[i][j] = 0;
+        }
+    }
 
-    dijkstra(graph, src, V);
+    for (int i = 0; i < m; i++)
+    {
+        int u, v;
 
-    return 0;
+        scanf("%d%d", &u, &v);
+        mat[u][v] = 1;
+    }
+
+    int s;
+    scanf("%d", &s);
+
+    queue[rear++] = s;
+    visited[s] = 1;
+
+    while (rear > front)
+    {
+        int now = queue[front];
+        front++;
+        printf("%d ", now);
+        for (int v = 0; v < 1000; v++)
+        {
+            if (now == v)
+            {
+                continue;
+            }
+            if (mat[now][v] && visited[v] == 0)
+            {
+                queue[rear++] = v;
+                visited[v] = 1;
+            }
+        }
+    }
+
+    for (int i = 0; i < 1000; i++)
+    {
+        visited[i] = 0;
+    }
+
+    printf("\n");
+    dfs(s);
 }
